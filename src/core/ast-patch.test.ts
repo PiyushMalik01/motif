@@ -324,3 +324,53 @@ describe("Task 3 – already-motion merge and fallbacks", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Fix 1 — motion binding check: framer-motion imported but without `motion`
+// ---------------------------------------------------------------------------
+
+describe("Fix 1 – motion binding vs bare framer-motion import", () => {
+  it("framer-motion imported for AnimatePresence only → output has motion binding and <motion.div>", () => {
+    // Previously broken: hasFramerMotionImport returned true for ANY framer-motion import,
+    // so no motion import was added, and <motion.div> referenced undefined `motion` → ReferenceError.
+    const source = `import { AnimatePresence } from "framer-motion";
+export default function C() {
+  return <div className="card">hello</div>;
+}
+`;
+    const loc: SourceLocation = { fileName: "test.tsx", lineNumber: 3, columnNumber: 9 };
+    const result = patchSource(source, loc, mountSpring);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      // Must contain <motion.div>
+      expect(result.code).toContain("motion.div");
+      // Must have a motion binding from framer-motion (default, namespace, or named specifier)
+      const hasMotionBinding =
+        result.code.includes("import motion from") ||
+        result.code.includes("import * as motion from") ||
+        /import\s+\{[^}]*\bmotion\b[^}]*\}\s+from\s+["']framer-motion["']/.test(result.code);
+      expect(hasMotionBinding).toBe(true);
+      // Must re-parse without error (proves runnable code)
+      assertValidJSX(result.code, "AnimatePresence-only import patched output");
+    }
+  });
+
+  it("already has motion binding → no duplicate motion import added", () => {
+    // Existing dedup expectation: if motion is already bound, don't add a second import.
+    const source = `import React from "react";
+import { motion } from "framer-motion";
+export default function C() {
+  return <div className="x" />;
+}
+`;
+    const loc: SourceLocation = { fileName: "test.tsx", lineNumber: 4, columnNumber: 9 };
+    const result = patchSource(source, loc, mountSpring);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      // Count how many times motion binding appears from framer-motion
+      const motionImportMatches = result.code.match(/\bmotion\b[^"']*from\s+["']framer-motion["']/g) ?? [];
+      // There should be exactly one import bringing in motion
+      expect(motionImportMatches.length).toBe(1);
+    }
+  });
+});

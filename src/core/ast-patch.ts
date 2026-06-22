@@ -158,19 +158,22 @@ function buildOpeningTag(
   while (lineStart > 0 && originalSource[lineStart - 1] !== "\n") {
     lineStart--;
   }
-  const indent = " ".repeat(tagStart - lineStart);
+  const tagIndent = " ".repeat(tagStart - lineStart);
+  // Props are indented by tag indent + 2 spaces so they sit beneath the opening tag
+  const propIndent = tagIndent + "  ";
 
   // Build the motion props with proper indentation
   // specToMotionProps returns newline-joined lines; indent each after the first
   const propLines = motionPropsStr.split("\n");
   const indentedProps = propLines
-    .map((line, i) => (i === 0 ? line : indent + line))
+    .map((line, i) => (i === 0 ? line : propIndent + line))
     .join("\n");
 
-  // Assemble opening tag
+  // Assemble opening tag: props and preserved attrs on their own lines,
+  // each indented by propIndent
   const selfClose = isSelfClosing ? " />" : ">";
   const parts = [`<motion.${motionTag}`, indentedProps, ...nonMotionAttrs];
-  return parts.join("\n" + indent) + selfClose;
+  return parts.join("\n" + propIndent) + selfClose;
 }
 
 /**
@@ -192,10 +195,32 @@ function findClosingElement(ast: t.File, openingEl: t.JSXOpeningElement): t.JSXC
 }
 
 /**
- * Check if `framer-motion` is already imported in the source.
+ * Check if `motion` is already bound by a framer-motion import in the AST.
+ * Returns true only if there is an ImportDeclaration from "framer-motion" that
+ * binds `motion` — via default import, namespace import (`import * as motion`),
+ * or a named specifier whose local name is `motion`.
+ * A file with only `import { AnimatePresence } from "framer-motion"` returns false,
+ * because `motion` is NOT in scope and `<motion.div>` would be a ReferenceError.
  */
-function hasFramerMotionImport(source: string): boolean {
-  return source.includes('"framer-motion"') || source.includes("'framer-motion'");
+function hasMotionBinding(ast: t.File): boolean {
+  for (const node of ast.program.body) {
+    if (!t.isImportDeclaration(node)) continue;
+    const src = node.source.value;
+    if (src !== "framer-motion") continue;
+    for (const specifier of node.specifiers) {
+      if (t.isImportDefaultSpecifier(specifier)) {
+        // import motion from "framer-motion"
+        if (specifier.local.name === "motion") return true;
+      } else if (t.isImportNamespaceSpecifier(specifier)) {
+        // import * as motion from "framer-motion"
+        if (specifier.local.name === "motion") return true;
+      } else if (t.isImportSpecifier(specifier)) {
+        // import { motion } from "framer-motion"  (local name must be "motion")
+        if (specifier.local.name === "motion") return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -300,29 +325,20 @@ export function patchSource(
     }
   }
 
-  // Step 7: Add framer-motion import if missing
-  if (!hasFramerMotionImport(patched)) {
-    // Re-parse patched to get import positions (import was already applied above)
+  // Step 7: Add framer-motion import if `motion` is not already bound.
+  // We check the ORIGINAL ast for the binding — this correctly handles the case
+  // where framer-motion is imported for other names (e.g. AnimatePresence) but
+  // NOT for `motion` itself. Using a substring check was wrong: it returned true
+  // for any framer-motion import, leaving `motion` undefined at runtime.
+  if (!hasMotionBinding(ast)) {
+    // Re-parse patched (post-JSX-splice) to get correct import positions.
     const patchedAst = tryParse(patched);
-    if (patchedAst) {
-      patched = insertImport(patched, patchedAst);
-    } else {
-      // If re-parse fails before import insertion, we need to use original ast
-      // positions adjusted — use original ast to find where to insert
-      const importLine = `import { motion } from "framer-motion";`;
-      const afterLast = findAfterLastImport(ast);
-      if (afterLast === 0) {
-        patched = importLine + "\n" + patched;
-      } else {
-        // Adjust for delta from the opening tag splice
-        const delta = newOpeningText.length - (opening.end! - opening.start!);
-        const adjustedAfterLast = afterLast <= opening.start! ? afterLast : afterLast + delta;
-        patched =
-          patched.slice(0, adjustedAfterLast) +
-          "\n" + importLine +
-          patched.slice(adjustedAfterLast);
-      }
+    if (!patchedAst) {
+      // Fix 2: If the post-splice text fails to parse, bail out immediately.
+      // Do NOT attempt hand-insertion into broken text with delta-adjusted offsets.
+      return fallback("edit would not parse");
     }
+    patched = insertImport(patched, patchedAst);
   }
 
   // Step 8: Safety re-parse
