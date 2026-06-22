@@ -64,6 +64,7 @@ The full v0.1 spine is built and tested (89 passing tests; `next build` green):
 
 Run it: `npm install && npm run dev`, then open `/editor`. Set `OPENAI_API_KEY` (see
 `.env.example`) for the AI prompt; the inspector, preview, and code panel work without a key.
+See [TESTING.md](./TESTING.md) for a full walkthrough (including testing the real file write-back).
 
 ## Roadmap
 
