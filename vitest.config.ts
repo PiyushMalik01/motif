@@ -9,7 +9,7 @@ export default defineConfig({
         test: {
           name: "node",
           environment: "node",
-          include: ["src/core/**/*.test.ts"],
+          include: ["src/core/**/*.test.ts", "src/app/api/**/*.test.ts"],
         },
       },
       // jsdom environment for overlay components and browser integration tests.

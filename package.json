@@ -11,9 +11,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.74",
     "@babel/parser": "^7.29.7",
     "@babel/traverse": "^7.29.7",
     "@babel/types": "^7.29.7",
+    "ai": "^6.0.208",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",

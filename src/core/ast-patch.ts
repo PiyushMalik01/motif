@@ -186,7 +186,7 @@ function findClosingElement(ast: t.File, openingEl: t.JSXOpeningElement): t.JSXC
   traverse(ast, {
     JSXElement(path) {
       if (path.node.openingElement === openingEl) {
-        closing = path.node.closingElement;
+        closing = path.node.closingElement ?? null;
       }
     },
   });

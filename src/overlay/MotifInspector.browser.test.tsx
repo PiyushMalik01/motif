@@ -60,7 +60,7 @@ describe("MotifInspector", () => {
      * element is a React element — proving the overlay intercepts any element
      * in the page, which is the production use case.
      */
-    const onSelect = vi.fn<[SourceLocation, Element]>();
+    const onSelect = vi.fn<(location: SourceLocation, element: Element) => void>();
 
     const { container } = render(<MotifInspector onSelect={onSelect} />);
 
