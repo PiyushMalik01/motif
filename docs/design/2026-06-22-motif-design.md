@@ -99,7 +99,7 @@ What is **original to Motif** (not found in those tools): the `MotionSpec`, the 
 - **Next.js + React + TypeScript**
 - **Tailwind** + a few **shadcn/ui** components for editor chrome
 - **Framer Motion** ("Motion") — both the runtime *and* the export target
-- **Vercel AI SDK** — provider-agnostic; can wire an Anthropic (Claude) or OpenAI key
+- **Vercel AI SDK** — provider-agnostic; can wire an OpenAI, Anthropic, or other model key
 - **AST:** `@babel/parser` + `ts-morph` for write-back
 - Overlay leans on React's existing dev `__source` instrumentation
 
