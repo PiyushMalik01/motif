@@ -94,12 +94,12 @@ describe("resolveFiberSource", () => {
 
 describe("getFiberFromDom", () => {
   it("returns the fiber from an element with a __reactFiber$* key", () => {
+    const fakeFiber = { _debugSource: { fileName: "/app/Foo.tsx", lineNumber: 3 } };
     const fakeElement = Object.assign(Object.create(null), {
-      "__reactFiber$abc123": { _debugSource: { fileName: "/app/Foo.tsx", lineNumber: 3 } },
+      "__reactFiber$abc123": fakeFiber,
     });
     const result = getFiberFromDom(fakeElement as unknown as Element);
-    expect(result).toBeTruthy();
-    expect((result as FiberLike)._debugSource?.fileName).toBe("/app/Foo.tsx");
+    expect(result).toBe(fakeFiber);
   });
 
   it("returns the fiber from an element with a __reactInternalInstance$* key (React <16 compat)", () => {

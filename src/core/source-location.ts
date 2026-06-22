@@ -92,8 +92,9 @@ const FIBER_KEY_PREFIXES = ["__reactFiber$", "__reactInternalInstance$"] as cons
  * Returns null when no fiber key is found.
  */
 export function getFiberFromDom(node: Element): FiberLike | null {
-  // Object.keys works on both real DOM nodes and plain fake objects.
-  const keys = Object.keys(node);
+  // Object.getOwnPropertyNames finds both enumerable and non-enumerable properties,
+  // ensuring non-enumerable React fiber keys are still detected.
+  const keys = Object.getOwnPropertyNames(node);
   for (const key of keys) {
     if (FIBER_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
