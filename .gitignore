@@ -52,3 +52,8 @@ NOTES.private.md
 
 # Local AI-assistant config — kept out of the public repo
 CLAUDE.md
+
+# Local test artifacts (Playwright screenshots/snapshots)
+.playwright-mcp/
+/editor-initial.png
+sample.tsx
