@@ -1,0 +1,12 @@
+Motif
+Copyright 2026 Piyush Malik
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this project except in compliance with the License.
+You may obtain a copy of the License in the LICENSE file or at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Portions of this project may adapt techniques from open-source tools in the
+design-to-code space (notably Onlook, Apache-2.0). Any reused code retains its
+original license and attribution.

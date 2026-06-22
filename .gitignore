@@ -49,3 +49,6 @@ NOTES.private.md
 
 # Internal working docs (plans) — design docs live in docs/design/ instead
 /docs/superpowers/
+
+# Local AI-assistant config — kept out of the public repo
+CLAUDE.md

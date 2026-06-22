@@ -69,8 +69,8 @@ preserve its original license and attribution.
 
 ## License
 
-**To be decided.** Until a license is chosen, no usage rights are granted. A permissive
-open-source license will be added before any public release. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+Licensed under the **Apache License 2.0** — see [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
+Copyright © 2026 Piyush Malik.
 
 ## Contributing
 
