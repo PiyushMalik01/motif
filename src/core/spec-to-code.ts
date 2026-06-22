@@ -23,10 +23,12 @@ function formatTransition(t: Transition): string {
   const parts: string[] = [];
   if (t.type === "spring") {
     parts.push('type: "spring"', `stiffness: ${t.stiffness}`, `damping: ${t.damping}`);
+    // Omit mass when it equals Framer Motion's default (1) to keep output minimal.
     if (t.mass !== undefined && t.mass !== 1) parts.push(`mass: ${t.mass}`);
   } else {
     parts.push('type: "tween"', `duration: ${t.duration}`, `ease: "${t.ease}"`);
   }
+  // Omit delay when 0 (the default) — falsy check intentionally drops only zero.
   if (t.delay) parts.push(`delay: ${t.delay}`);
   return `{ ${parts.join(", ")} }`;
 }

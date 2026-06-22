@@ -28,6 +28,7 @@ describe("motionSpec", () => {
     });
     expect(parsed.transition).toMatchObject({ type: "tween", duration: 0.2, ease: "easeOut" });
     expect(parsed.element).toBe("div"); // default applied
+    expect(parsed.transition).toHaveProperty("delay", 0);
   });
 
   it("rejects an unknown trigger", () => {

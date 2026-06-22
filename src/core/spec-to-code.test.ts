@@ -70,6 +70,18 @@ describe("specToMotionProps", () => {
     expect(out).not.toContain("delay:");
     expect(out).not.toContain("undefined");
   });
+
+  it("emits empty braces when an animatable set has no defined props", () => {
+    const emptyFrom = motionSpec.parse({
+      trigger: "mount",
+      from: {},
+      to: { opacity: 1 },
+      transition: { type: "tween", duration: 0.2, ease: "linear" },
+    });
+    const out = specToMotionProps(emptyFrom);
+    expect(out).toContain("initial={{}}");
+    expect(out).not.toContain("undefined");
+  });
 });
 
 describe("specToCode", () => {
