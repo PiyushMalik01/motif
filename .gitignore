@@ -43,3 +43,9 @@ NOTES.private.md
 *.private.md
 /private/
 /.scratch/
+
+# Superpowers SDD scratch (briefs, reports, diffs, progress ledger)
+/.superpowers/
+
+# Internal working docs (plans) — design docs live in docs/design/ instead
+/docs/superpowers/
