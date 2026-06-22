@@ -31,7 +31,10 @@ export interface MotifInspectorProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function MotifInspector({ onSelect }: MotifInspectorProps) {
+/**
+ * Inner implementation — all hooks live here, no conditional returns above them.
+ */
+function MotifInspectorInner({ onSelect }: MotifInspectorProps) {
   const [inspecting, setInspecting] = useState(false);
   const outlineRef = useRef<Element | null>(null);
 
@@ -118,4 +121,15 @@ export function MotifInspector({ onSelect }: MotifInspectorProps) {
       </button>
     </div>
   );
+}
+
+/**
+ * Public export. Dev-only guard: renders null in production builds.
+ * The inner component holds all hooks so they are never called conditionally.
+ */
+export function MotifInspector(props: MotifInspectorProps) {
+  if (process.env.NODE_ENV === "production") {
+    return null;
+  }
+  return <MotifInspectorInner {...props} />;
 }

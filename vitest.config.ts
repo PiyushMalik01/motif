@@ -18,7 +18,7 @@ export default defineConfig({
         test: {
           name: "jsdom",
           environment: "jsdom",
-          include: ["src/overlay/**/*.test.tsx", "src/**/*.browser.test.tsx"],
+          include: ["src/overlay/**/*.test.tsx", "src/**/*.browser.test.tsx", "src/editor/**/*.test.tsx"],
           setupFiles: [],
         },
       },
