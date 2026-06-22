@@ -17,8 +17,10 @@ import { POST } from "./route";
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** Use a temp dir inside the project root so the write-route's path-confinement check passes. */
 function makeTempFile(content: string, suffix = ".tsx"): string {
-  const tmpDir = os.tmpdir();
+  const tmpDir = path.join(process.cwd(), ".tmp-test");
+  fs.mkdirSync(tmpDir, { recursive: true });
   const filePath = path.join(tmpDir, `motif-test-${Date.now()}-${Math.random().toString(36).slice(2)}${suffix}`);
   fs.writeFileSync(filePath, content, "utf-8");
   return filePath;
@@ -200,14 +202,93 @@ describe("POST /api/motif/write", () => {
   });
 
   describe("error cases", () => {
-    it("returns 500 when filePath does not exist", async () => {
+    it("returns 500 when a .tsx file inside the project root does not exist", async () => {
+      // Use a path that's inside project root but does not exist on disk
+      const nonExistentInsideRoot = path.join(process.cwd(), "nonexistent-file-xyz.tsx");
       const req = makeRequest({
-        filePath: "/nonexistent/path/file.tsx",
-        location: { fileName: "/nonexistent/path/file.tsx", lineNumber: 1, columnNumber: 0 },
+        filePath: nonExistentInsideRoot,
+        location: { fileName: nonExistentInsideRoot, lineNumber: 1, columnNumber: 0 },
         spec: SAMPLE_SPEC,
       });
       const res = await POST(req);
       expect(res.status).toBe(500);
+    });
+  });
+
+  describe("security: path traversal prevention", () => {
+    it("returns 400 and writes NO file when filePath uses .. to escape project root (absolute escape path)", async () => {
+      // Construct an escape path that resolves outside process.cwd()
+      const escapePath = path.join(process.cwd(), "..", "escape.tsx");
+      const escapedFile = path.resolve(escapePath);
+
+      const req = makeRequest({
+        filePath: escapePath,
+        location: { fileName: escapePath, lineNumber: 1, columnNumber: 0 },
+        spec: SAMPLE_SPEC,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.error).toMatch(/escapes project root/i);
+
+      // Assert no file was written at that location
+      expect(fs.existsSync(escapedFile)).toBe(false);
+    });
+
+    it("returns 400 and writes NO file when filePath uses relative ../ to escape project root", async () => {
+      const relativeEscape = "../../escape.tsx";
+      const escapedFile = path.resolve(process.cwd(), relativeEscape);
+
+      const req = makeRequest({
+        filePath: relativeEscape,
+        location: { fileName: relativeEscape, lineNumber: 1, columnNumber: 0 },
+        spec: SAMPLE_SPEC,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.error).toMatch(/escapes project root/i);
+
+      expect(fs.existsSync(escapedFile)).toBe(false);
+    });
+
+    it("returns 400 for a non-.tsx/.jsx file inside the project root (e.g. notes.txt)", async () => {
+      const txtFile = path.join(process.cwd(), "notes.txt");
+
+      const req = makeRequest({
+        filePath: txtFile,
+        location: { fileName: txtFile, lineNumber: 1, columnNumber: 0 },
+        spec: SAMPLE_SPEC,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.error).toMatch(/only .tsx\/.jsx/i);
+
+      // Confirm no file was created
+      expect(fs.existsSync(txtFile)).toBe(false);
+    });
+  });
+
+  describe("Fix 2: columnNumber validation", () => {
+    it("returns 400 when location.columnNumber is missing", async () => {
+      const req = makeRequest({
+        filePath: "/some/file.tsx",
+        location: { fileName: "x", lineNumber: 1 },
+        spec: SAMPLE_SPEC,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+    });
+
+    it("returns 400 when location.columnNumber is not a number", async () => {
+      const req = makeRequest({
+        filePath: "/some/file.tsx",
+        location: { fileName: "x", lineNumber: 1, columnNumber: "not-a-number" },
+        spec: SAMPLE_SPEC,
+      });
+      const res = await POST(req);
+      expect(res.status).toBe(400);
     });
   });
 });

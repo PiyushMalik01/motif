@@ -91,19 +91,7 @@ export function EditorClient() {
         <aside className="w-72 shrink-0 border-r border-gray-800 overflow-y-auto p-4">
           <Inspector
             spec={spec}
-            onChange={(next) => {
-              setTrigger(next.trigger);
-              if (next.transition.type === "spring") {
-                setSpring({
-                  stiffness: next.transition.stiffness,
-                  damping: next.transition.damping,
-                  mass: next.transition.mass,
-                  delay: next.transition.delay,
-                });
-              }
-              setTo(next.to);
-              setFrom(next.from);
-            }}
+            onChange={setSpec}
           />
         </aside>
 

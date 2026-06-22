@@ -1,19 +1,24 @@
 /**
  * A1 — AI model accessor + prompt builder for spec editing.
  *
- * Model accessor reads OPENAI_API_KEY from the environment.
- * To swap providers:
- *   - Anthropic: `import { anthropic } from "@ai-sdk/anthropic"; return anthropic(model)`
- *   - AI Gateway: pass a "provider/model" string via MOTIF_MODEL (e.g. "anthropic/claude-3-5-haiku")
- *     and use the Vercel AI Gateway provider instead of the direct openai() accessor.
+ * `getModel()` uses the OpenAI provider (openai()) and reads OPENAI_API_KEY.
+ * MOTIF_MODEL controls only the model name string (default: "gpt-4o-mini").
+ *
+ * To switch providers you must change the code, not just set MOTIF_MODEL:
+ *   - Anthropic SDK:  replace `openai(model)` with `anthropic(model)` from "@ai-sdk/anthropic"
+ *   - Vercel AI Gateway:  replace `openai(model)` with the gateway provider and use a
+ *     "provider/model" MOTIF_MODEL string (e.g. "anthropic/claude-3-5-haiku").
+ *
+ * MOTIF_MODEL alone is NOT enough to switch providers — the import and call must change too.
  */
 
 import { openai } from "@ai-sdk/openai";
 import type { MotionSpec } from "../motion-spec";
 
 /**
- * Returns the AI SDK model instance.
- * Reads MOTIF_MODEL (default: "gpt-4o-mini") and OPENAI_API_KEY from the environment.
+ * Returns the AI SDK model instance via the OpenAI provider.
+ * MOTIF_MODEL sets the model name (default: "gpt-4o-mini"); OPENAI_API_KEY must be set.
+ * To use a different provider (Anthropic, AI Gateway, etc.) you must edit the code here.
  * Not unit-tested (env/IO side-effect).
  */
 export function getModel() {

@@ -10,6 +10,7 @@
 
 import { NextResponse } from "next/server";
 import * as fs from "node:fs";
+import * as path from "node:path";
 import { patchSource } from "../../../../core/ast-patch";
 import { motionSpec } from "../../../../core/motion-spec";
 import type { SourceLocation } from "../../../../core/source-location";
@@ -42,7 +43,8 @@ export async function POST(request: Request): Promise<Response> {
   if (
     typeof b.location !== "object" ||
     b.location === null ||
-    typeof (b.location as Record<string, unknown>).lineNumber !== "number"
+    typeof (b.location as Record<string, unknown>).lineNumber !== "number" ||
+    typeof (b.location as Record<string, unknown>).columnNumber !== "number"
   ) {
     return NextResponse.json({ error: "Missing or invalid 'location'" }, { status: 400 });
   }
@@ -60,9 +62,21 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const filePath = b.filePath.trim();
+  const rawFilePath = b.filePath.trim();
   const location = b.location as SourceLocation;
   const spec = specResult.data;
+
+  // Security: resolve and confine to project root; restrict to .tsx/.jsx
+  const root = process.cwd();
+  const resolved = path.resolve(root, rawFilePath);
+  if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+    return NextResponse.json({ error: "filePath escapes project root" }, { status: 400 });
+  }
+  if (!/\.(tsx|jsx)$/.test(resolved)) {
+    return NextResponse.json({ error: "only .tsx/.jsx files may be edited" }, { status: 400 });
+  }
+
+  const filePath = resolved;
 
   // Read the source file
   let source: string;
