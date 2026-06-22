@@ -23,7 +23,7 @@ function formatTransition(t: Transition): string {
   const parts: string[] = [];
   if (t.type === "spring") {
     parts.push('type: "spring"', `stiffness: ${t.stiffness}`, `damping: ${t.damping}`);
-    if (t.mass !== 1) parts.push(`mass: ${t.mass}`);
+    if (t.mass !== undefined && t.mass !== 1) parts.push(`mass: ${t.mass}`);
   } else {
     parts.push('type: "tween"', `duration: ${t.duration}`, `ease: "${t.ease}"`);
   }
