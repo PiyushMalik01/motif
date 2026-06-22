@@ -1,0 +1,45 @@
+# ───────────────────────────────────────────────────────────
+# Motif .gitignore — keep the public repo clean.
+# Anything personal, secret, or machine-specific stays OUT.
+# ───────────────────────────────────────────────────────────
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Next.js / build output
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment & secrets — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# Logs & debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test / coverage
+coverage/
+
+# Editor & OS noise (personal dev setup — not for the public repo)
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.pem
+
+# ── Private / internal — strategy, notes, anything "just for me" ──
+NOTES.private.md
+*.private.md
+/private/
+/.scratch/
