@@ -9,7 +9,8 @@ running over your **own real app**, writing **real animation code back into your
 
 No export. No copy-paste. What you feel *is* the code.
 
-> ⚠️ **Status: early development (pre-v0.1).** Not yet functional. Building in the open.
+> 🚧 **Status: early development (v0.1 in progress).** The engine + a working editor exist and
+> build; live in-browser selection and AI model calls need local setup. Building in the open.
 
 </div>
 
@@ -46,14 +47,28 @@ never drift apart.
   in your app    ──►   (file/line/col)  ──►  (AI + hand-tweak)  ──►   to your .tsx
 ```
 
+## What works today
+
+The full v0.1 spine is built and tested (89 passing tests; `next build` green):
+
+- **`MotionSpec` engine** — the typed single source of truth, with a deterministic
+  `specToCode` generator (`src/core`).
+- **Source resolution** — resolve a clicked element to its `{file, line, column}` via React's
+  dev `__source`, plus a dev overlay (`MotifInspector`).
+- **AST write-back** — `patchSource` wraps/merges real Framer Motion into a target JSX element,
+  preserving formatting, with a safe "show the snippet instead" fallback that never corrupts a
+  file (the written code is byte-identical to the preview).
+- **Editor app** at `/editor` — prompt bar, live preview, inspector (spring/trigger), and code
+  panel over one shared spec; plus `/api/motif/spec` (AI edits the spec) and a dev-only
+  `/api/motif/write` (patches the real file, confined to the project root).
+
+Run it: `npm install && npm run dev`, then open `/editor`. Set `OPENAI_API_KEY` (see
+`.env.example`) for the AI prompt; the inspector, preview, and code panel work without a key.
+
 ## Roadmap
 
-**v0.1 (in progress):** overlay on your running app · click-to-select with source resolution ·
-in-place + isolated editing · AI-proposed motion · hand-tweak controls (spring / easing /
-trigger) · live preview · real write-back for common cases with a safe fallback.
-
-**Later:** multi-element timelines & orchestration · broader write-back coverage ·
-non-Framer targets (CSS / GSAP) · persistence and collaboration.
+**Next:** in-browser click-to-edit wired end-to-end · broader AST write-back coverage ·
+multi-element timelines & orchestration · non-Framer targets (CSS / GSAP) · persistence.
 
 ## Tech stack
 
